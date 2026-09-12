@@ -5,10 +5,6 @@ name = "pypi"
 
 [packages]
 pandas = "*"
-matplotlib = "*"
-adjusttext = "*"
-seaborn = "*"
-scipy = "*"
 plotly = "*"
 odfpy = "*"
 
