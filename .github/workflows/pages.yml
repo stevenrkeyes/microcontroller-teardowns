@@ -25,7 +25,7 @@ jobs:
           cache: pipenv
           cache-dependency-path: Pipfile.lock
       - run: pip install pipenv
-      - run: pipenv sync --deploy
+      - run: pipenv install --deploy
       - run: pipenv run python plot_mcu_brands_used_by_year_interactive.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
