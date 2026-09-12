@@ -1,9 +1,9 @@
 import collections
 import datetime
+import os
 
 import pandas as pd
 import plotly.express as px
-import plotly
 import numpy as np
 
 # Load the spreadsheet with pandas
@@ -138,7 +138,7 @@ y_tick_text = list(microcontroller_mapping.keys())
 
 fig.add_annotation(
     showarrow=False,
-    text="*Product has multiple<br>microcontrollers and/or BLE chips.<br><br>Plot generated " + datetime.datetime.today().strftime('%#d %b %Y'),
+    text="*Product has multiple<br>microcontrollers and/or BLE chips.<br><br>Plot generated " + datetime.date.today().strftime("%d %b %Y").lstrip("0"),
     font=dict(size=10),
     xref='paper',
     x=1.05,
@@ -151,6 +151,8 @@ fig.add_annotation(
 
 # Update layout for better appearance
 fig.update_layout(
+    width=1030,
+    height=920,
     xaxis=dict(
         tickmode='linear',
         tick0=2000,
@@ -169,7 +171,10 @@ fig.update_layout(
 fig.update_xaxes(range=[min(df["Apprx Release"]) - 0.5,
                         max(df["Apprx Release"]) + 0.5])
 
-# Show the plot
-# fig.show()
-
-plotly.offline.plot(fig, filename='interactive_microcontroller_plot.html')
+# Write the plot to site/index.html using the template
+os.makedirs("site", exist_ok=True)
+with open(os.path.join("web", "template.html"), encoding="utf-8") as template_file:
+    page = template_file.read()
+plot_html = fig.to_html(full_html=False, include_plotlyjs="cdn")
+with open(os.path.join("site", "index.html"), "w", encoding="utf-8") as output_file:
+    output_file.write(page.replace("<!--PLOT-->", plot_html, 1))

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Microcontrollers and BLE Chips Used by Various Products</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap">
+  <style>
+    :root {
+      color-scheme: light;
+    }
+    body {
+      margin: 0;
+      font-family: "Open Sans", verdana, arial, sans-serif;
+      background: #fff;
+      color: #111;
+    }
+    footer {
+      padding: 0.75rem 1.25rem 1.25rem;
+      border-top: 1px solid #ddd;
+    }
+    details {
+      max-width: 46rem;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    details > *:not(summary) {
+      margin: 0.6rem 0 0;
+      line-height: 1.45;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div id="plot">
+    <!--PLOT-->
+  </div>
+  <footer>
+    <details>
+      <summary>About</summary>
+      <p>
+        When I first started in the field of electrical engineering, one question I had was, "What microcontrollers are most people using?" Are there brands that are really only used among hobbyists? Are there brands that look good on paper, but people steer away from in practice? It seems like a foundational question, the kind that every electrical engineer and firmware developer should have a grasp of. And yet, it seems hard to know unless you're actually a system architect with decades of experience at a variety of companies, or perhaps some kind of consultancy who does systematic teardowns for market research. Hardware development cycles are long enough that, even someone who's worked at a medium-sized company for a few years will really just know the handful of chips use by their own company.
+        </p>
+
+        <p>
+        In the end, I decided to answer this question myself. It turns out there are more than enough teardowns posted online to get a good picture of things, as long as you're willing to take the time to go through them. Not only is there iFixit and teardowns of popular products by fans, but publicly-accessible FCC submissions often include enough information to at least identify the microcontroller in a given product*.
+        </p>
+
+        <p>
+        Using these, I made this plot of microcontrollers used vs time. Each point is a microcontroller used in a product, with some of them color-coded if they were developed by an especially notable company (and it's also filterable by this). The x-axis is the approximate release year of the product. The y-axis is the microcontroller brand. Mousing over each point gives more information.
+        </p>
+      </p>
+      <p>Caveats:</p>
+      <ul>
+        <li>The release year is usually well-defined for consumer electronics, but I used my best approximation for things like medical devices, where the announcement, submission, and release dates might span multiple years.</li>
+        <li>Over time, some brands have merged, some have split, etc. I've merged them where it makes sense to me.</li>
+        <li>Obviously, this project isn't exhaustive, and I think it would be a worse graphic if it were since that would include more bad examples, products that were not well designed, etc, rather than serving as an indicator for what people are settling on as good choices. This plot also has a focus on wearables, small consumer electronics, and medical devices because that's been my industry.</li>
+        <li>You'll also notice the plot has a bias toward wireless devices, partially because wearables are necessarily wireless but also because it's easier to find teardowns of these since they necessarily have a FCC submission.</li>
+        <li>I also tried to limit the scope of the graph to chips that you would call a microcontroller rather than something more powerful (what you might call a microprocessor or processor), although a few slipped in. Maybe in a future version of this plot, I'll filter between these.</li>
+      </ul>
+      <p>
+        Some devices also have multiple microcontrollers, especially a main microcontroller and a separate wireless transceiver microcontroller, which I've included and indicated with an asterisk. That said, how to treat multiple microcontrollers in a product is a little tricky; if my goal is to answer the question "What microcontrollers do designers consider to be good choices for their designs", do I really care about a product's 3rd microcontroller that's just an 8-bit core monitoring buttons? Anyway, I did my best.
+      </p>
+      <p>
+        *I'll also give a tip that, even if you can't read the chip markings, I found that you can often identify microcontrollers based on their size, pin count, and (most importantly) the placement of external components! The placement of the crystal(s) and antenna are usually unique among the the dozen most popular series of chips. If you can't figure it out exactly, you can often at least figure out the family. For example, the Nordic nRF52 (all chips, all footprints I think) have the antenna coming out the middle of one side of the chip, and a crystal on the end of that same side, an arrangement not used on any other major contemporary chips to my knowledge. This deserves a writeup of its own, but that's another day.
+      </p>
+    </details>
+  </footer>
+</body>
+</html>
