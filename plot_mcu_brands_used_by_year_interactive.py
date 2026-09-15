@@ -23,15 +23,12 @@ for column_name in ["Microcontroller", "BLE chip"]:
 df = df.dropna(subset=['Microcontroller', 'BLE chip'], how='all')
 
 
-# Make a new "Company and Device" column
 def get_label(row):
     # Make a label that is the Company + Device name unless the device name is (or starts with) the company name
     if row['Device'].startswith(row['Company']):
         return row['Device']
     return row['Company'] + ' ' + row['Device']
 
-
-df['Company and Device'] = df.apply(get_label, axis=1)
 
 # Make a list of important companies to note later
 important_companies = ["Abbott", "Alivecor", "Amazon", "Apple", "Baxter / Bardy Dx",
@@ -51,11 +48,6 @@ if suggested_companies:
 
 important_companies = sorted(important_companies)
 
-df['Company'] = df['Company'].apply(lambda x: x if x in important_companies else 'Other')
-
-# Put "Other" at the end
-important_companies = important_companies + ["Other"]
-
 # Create "Brand and Microcontroller" column, and make copies of rows that have multiple chips
 rows_to_append = pd.DataFrame()
 for index, row in df.iterrows():
@@ -72,6 +64,13 @@ for index, row in df.iterrows():
         rows_to_append = pd.concat([rows_to_append, pd.DataFrame([copy_row])], ignore_index=True)
 
 df = pd.concat([df, rows_to_append], ignore_index=True)
+
+df['Company and Device'] = df.apply(get_label, axis=1)
+
+df['Company'] = df['Company'].apply(lambda x: x if x in important_companies else 'Other')
+
+# Put "Other" at the end
+important_companies = important_companies + ["Other"]
 
 # Remove "BLE chip" and "Microcontroller" columns
 df = df.drop(columns=['BLE chip', 'Microcontroller'])
@@ -151,7 +150,7 @@ fig.add_annotation(
     text="*Product has multiple<br>microcontrollers and/or BLE chips.<br><br>Plot generated " + datetime.date.today().strftime("%d %b %Y").lstrip("0"),
     font=dict(size=10),
     xref='paper',
-    x=1.05,
+    x=1.01,
     xanchor="left",
     yref='paper',
     y=-0.02,
