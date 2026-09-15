@@ -34,12 +34,22 @@ def get_label(row):
 df['Company and Device'] = df.apply(get_label, axis=1)
 
 # Make a list of important companies to note later
-important_companies = ["Fitbit", "Boston Scientific / Preventice", "Google", "Garmin", "Dexcom", "Medtronic",
-                       "Alivecor", "Vitalconnect", "Baxter / Bardy Dx", "Abbott", "Whoop"]
-# Also add companies that have >3 products in the listing
-important_companies += [company for company, count in collections.Counter(list(df["Company"])).items() if count > 3]
+important_companies = ["Abbott", "Alivecor", "Amazon", "Apple", "Baxter / Bardy Dx",
+                       "Boston Scientific / Preventice", "Dexcom", "Fitbit", "Garmin", "Google",
+                       "Masimo", "Medtronic", "Samsung", "Vitalconnect", "Whoop"]
 # Remove duplicates and sort
 important_companies = sorted(list(set(important_companies)))
+suggested_companies = sorted(
+    ((company, count) for company, count in collections.Counter(list(df["Company"])).items()
+     if count > 3 and company not in important_companies),
+    key=lambda item: item[0]
+)
+if suggested_companies:
+    print("Companies with more than 3 products not on the important company list:")
+    for company, count in suggested_companies:
+        print(f"  {company} ({count})")
+
+important_companies = sorted(important_companies)
 
 df['Company'] = df['Company'].apply(lambda x: x if x in important_companies else 'Other')
 
