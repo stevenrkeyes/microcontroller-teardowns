@@ -223,7 +223,7 @@ y_tick_text = list(microcontroller_mapping.keys())
 
 fig.add_annotation(
     showarrow=False,
-    text="*Product has multiple<br>microcontrollers and/or wireless microcontrollers.<br><br>Plot generated " + datetime.date.today().strftime("%d %b %Y").lstrip("0"),
+    text="*Product has multiple<br>microcontrollers.<br><br>Plot generated " + datetime.date.today().strftime("%d %b %Y").lstrip("0"),
     font=dict(size=10),
     xref='paper',
     x=1.01,
