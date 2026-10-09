@@ -10,17 +10,17 @@ import numpy as np
 df = pd.read_excel("teardown notes.ods")
 
 # Remove extraneous columns
-df = df[["Company", "Device", "Apprx Release", "Microcontroller", "BLE chip"]]
+df = df[["Company", "Device", "Apprx Release", "Microcontroller", "Wireless Microcontroller"]]
 
 # Discard rows without "Apprx Release"
 df = df.dropna(subset=['Apprx Release'])
 
-# Replace "See microcontroller", "?", and "-" with blank in "Microcontroller" and "BLE chip" columns
-for column_name in ["Microcontroller", "BLE chip"]:
+# Replace "See microcontroller", "?", and "-" with blank in "Microcontroller" and "Wireless Microcontroller" columns
+for column_name in ["Microcontroller", "Wireless Microcontroller"]:
     df[column_name] = df[column_name].replace(['See microcontroller', 'See microcontroller?', '?', '-'], np.nan)
 
-# Discard rows where both "Microcontroller" and "BLE chip" are blank
-df = df.dropna(subset=['Microcontroller', 'BLE chip'], how='all')
+# Discard rows where both "Microcontroller" and "Wireless Microcontroller" are blank
+df = df.dropna(subset=['Microcontroller', 'Wireless Microcontroller'], how='all')
 
 
 def get_label(row):
@@ -51,15 +51,15 @@ important_companies = sorted(important_companies)
 # Create "Brand and Microcontroller" column, and make copies of rows that have multiple chips
 rows_to_append = pd.DataFrame()
 for index, row in df.iterrows():
-    if pd.isna(row['BLE chip']) and not pd.isna(row['Microcontroller']):
+    if pd.isna(row['Wireless Microcontroller']) and not pd.isna(row['Microcontroller']):
         df.at[index, 'Brand and Microcontroller'] = row['Microcontroller']
-    elif pd.isna(row['Microcontroller']) and not pd.isna(row['BLE chip']):
-        df.at[index, 'Brand and Microcontroller'] = row['BLE chip']
-    elif not pd.isna(row['Microcontroller']) and not pd.isna(row['BLE chip']):
+    elif pd.isna(row['Microcontroller']) and not pd.isna(row['Wireless Microcontroller']):
+        df.at[index, 'Brand and Microcontroller'] = row['Wireless Microcontroller']
+    elif not pd.isna(row['Microcontroller']) and not pd.isna(row['Wireless Microcontroller']):
         df.at[index, 'Brand and Microcontroller'] = row['Microcontroller']
         df.at[index, 'Device'] += '*'  # Add asterisk to Device
         copy_row = row.copy()
-        copy_row['Brand and Microcontroller'] = row['BLE chip']
+        copy_row['Brand and Microcontroller'] = row['Wireless Microcontroller']
         copy_row['Device'] += '*'
         rows_to_append = pd.concat([rows_to_append, pd.DataFrame([copy_row])], ignore_index=True)
 
@@ -72,8 +72,8 @@ df['Company'] = df['Company'].apply(lambda x: x if x in important_companies else
 # Put "Other" at the end
 important_companies = important_companies + ["Other"]
 
-# Remove "BLE chip" and "Microcontroller" columns
-df = df.drop(columns=['BLE chip', 'Microcontroller'])
+# Remove "Wireless Microcontroller" and "Microcontroller" columns
+df = df.drop(columns=['Wireless Microcontroller', 'Microcontroller'])
 
 # Make a new "Microcontroller Brand" column
 df['Microcontroller Brand'] = df['Brand and Microcontroller'].str.split().str[0]
@@ -147,7 +147,7 @@ y_tick_text = list(microcontroller_mapping.keys())
 
 fig.add_annotation(
     showarrow=False,
-    text="*Product has multiple<br>microcontrollers and/or BLE chips.<br><br>Plot generated " + datetime.date.today().strftime("%d %b %Y").lstrip("0"),
+    text="*Product has multiple<br>microcontrollers and/or wireless microcontrollers.<br><br>Plot generated " + datetime.date.today().strftime("%d %b %Y").lstrip("0"),
     font=dict(size=10),
     xref='paper',
     x=1.01,
