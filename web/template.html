@@ -36,6 +36,40 @@
       line-height: 1.45;
       color: #333;
     }
+
+    #product-table-wrap {
+      padding: 0.75rem 1.25rem 1.25rem;
+      border-top: 1px solid #ddd;
+    }
+
+    #product-table-wrap summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    #product-table-wrap .table-scroll {
+      overflow-x: auto;
+      margin-top: 0.75rem;
+    }
+
+    #product-table-wrap table {
+      border-collapse: collapse;
+      width: max-content;
+      font-size: 0.85rem;
+    }
+
+    #product-table-wrap th,
+    #product-table-wrap td {
+      border: 1px solid #ddd;
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+
+    #product-table-wrap tr.highlight {
+      background: #fff3bf;
+    }
   </style>
 </head>
 
@@ -108,6 +142,31 @@
       deserves a writeup of its own, but that's another day.
     </p>
   </footer>
+  <!--TABLE-->
+  <script>
+    (function () {
+      var plot = document.getElementById("microcontroller-plot");
+      if (!plot || typeof plot.on !== "function") {
+        return;
+      }
+      plot.on("plotly_click", function (data) {
+        var point = data.points[0];
+        var id = point.customdata[1];
+        var details = document.getElementById("product-table");
+        var row = document.getElementById("product-" + id);
+        if (details) {
+          details.open = true;
+        }
+        document.querySelectorAll("#product-table-wrap tr.highlight").forEach(function (highlighted) {
+          highlighted.classList.remove("highlight");
+        });
+        if (row) {
+          row.classList.add("highlight");
+          row.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
+    })();
+  </script>
 </body>
 
 </html>

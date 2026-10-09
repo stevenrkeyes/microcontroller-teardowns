@@ -1,6 +1,8 @@
 import collections
 import datetime
+import html
 import os
+import re
 
 import pandas as pd
 import plotly.express as px
@@ -10,7 +12,7 @@ import numpy as np
 df = pd.read_excel("teardown notes.ods")
 
 # Remove extraneous columns
-df = df[["Company", "Device", "Apprx Release", "Microcontroller", "Wireless Microcontroller"]]
+df = df[["Company", "Device", "Apprx Release", "Microcontroller", "Wireless Microcontroller", "Links"]]
 
 # Discard rows without "Apprx Release"
 df = df.dropna(subset=['Apprx Release'])
@@ -21,6 +23,79 @@ for column_name in ["Microcontroller", "Wireless Microcontroller"]:
 
 # Discard rows where both "Microcontroller" and "Wireless Microcontroller" are blank
 df = df.dropna(subset=['Microcontroller', 'Wireless Microcontroller'], how='all')
+
+df['Company'] = df['Company'].apply(lambda value: '' if pd.isna(value) else str(value))
+df['Device'] = df['Device'].apply(lambda value: '' if pd.isna(value) else str(value))
+df = df.reset_index(drop=True)
+df['product_id'] = df.index.astype(int)
+
+
+def get_chips(row):
+    chips = [row['Microcontroller'], row['Wireless Microcontroller']]
+    chips = [chip for chip in chips if not pd.isna(chip)]
+    first = chips[0] if chips else ''
+    second = chips[1] if len(chips) > 1 else ''
+    return first, second
+
+
+def format_html_for_source_column(value):
+    if pd.isna(value):
+        return ''
+    text = str(value).strip()
+    if text == '' or text == 'nan':
+        return ''
+    starts = [match.start() for match in re.finditer(r'https?://', text)]
+    if not starts:
+        return html.escape(text)
+    urls = []
+    for i, start in enumerate(starts):
+        end = starts[i + 1] if i + 1 < len(starts) else len(text)
+        urls.append(text[start:end].rstrip('.,);'))
+    return ' '.join(
+        f'<a href="{html.escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{i}</a>'
+        for i, url in enumerate(urls, start=1)
+    )
+
+
+def build_product_table(table_df):
+    table_df = table_df.assign(
+        _company_sort=table_df['Company'].str.lower(),
+        _device_sort=table_df['Device'].str.lower(),
+    ).sort_values(
+        by=['_company_sort', 'Apprx Release', '_device_sort'],
+        kind='mergesort',
+    )
+    body_rows = []
+    for _, row in table_df.iterrows():
+        microcontroller_1, microcontroller_2 = get_chips(row)
+        year = '' if pd.isna(row['Apprx Release']) else str(int(row['Apprx Release']))
+        body_rows.append(
+            '<tr id="product-' + str(int(row['product_id'])) + '">'
+            + '<td>' + html.escape(row['Company']) + '</td>'
+            + '<td>' + html.escape(row['Device']) + '</td>'
+            + '<td>' + html.escape(year) + '</td>'
+            + '<td>' + html.escape(str(microcontroller_1)) + '</td>'
+            + '<td>' + html.escape(str(microcontroller_2)) + '</td>'
+            + '<td>' + format_html_for_source_column(row['Links']) + '</td>'
+            + '</tr>'
+        )
+    return (
+        '<section id="product-table-wrap">'
+        '<details id="product-table">'
+        '<summary>Product table</summary>'
+        '<div class="table-scroll">'
+        '<table>'
+        '<thead><tr>'
+        '<th>Company</th><th>Product</th><th>Approximate Release</th>'
+        '<th>Microcontroller 1</th><th>Microcontroller 2</th><th>Source</th>'
+        '</tr></thead>'
+        '<tbody>'
+        + ''.join(body_rows)
+        + '</tbody></table></div></details></section>'
+    )
+
+
+product_table_html = build_product_table(df)
 
 
 def get_label(row):
@@ -72,8 +147,8 @@ df['Company'] = df['Company'].apply(lambda x: x if x in important_companies else
 # Put "Other" at the end
 important_companies = important_companies + ["Other"]
 
-# Remove "Wireless Microcontroller" and "Microcontroller" columns
-df = df.drop(columns=['Wireless Microcontroller', 'Microcontroller'])
+# Remove unneeded columns
+df = df.drop(columns=['Wireless Microcontroller', 'Microcontroller', 'Links'])
 
 # Make a new "Microcontroller Brand" column
 df['Microcontroller Brand'] = df['Brand and Microcontroller'].str.split().str[0]
@@ -133,7 +208,7 @@ fig = px.scatter(
     df,
     x='Apprx Release Beeswarm',
     y='Microcontroller Value Beeswarm',
-    hover_data={'Apprx Release Beeswarm': False, 'Microcontroller Value Beeswarm': False, 'Label': True},
+    custom_data=['Label', 'product_id'],
     title="Microcontrollers and BLE Chips Used by Various IoT or Wearable Products, by Year",
     color='Company',
     color_discrete_map=color_map,
@@ -185,6 +260,8 @@ fig.update_xaxes(range=[min(df["Apprx Release"]) - 0.5,
 os.makedirs("site", exist_ok=True)
 with open(os.path.join("web", "template.html"), encoding="utf-8") as template_file:
     page = template_file.read()
-plot_html = fig.to_html(full_html=False, include_plotlyjs="cdn")
+plot_html = fig.to_html(full_html=False, include_plotlyjs="cdn", div_id="microcontroller-plot")
+page = page.replace("<!--PLOT-->", plot_html, 1)
+page = page.replace("<!--TABLE-->", product_table_html, 1)
 with open(os.path.join("site", "index.html"), "w", encoding="utf-8") as output_file:
-    output_file.write(page.replace("<!--PLOT-->", plot_html, 1))
+    output_file.write(page)
