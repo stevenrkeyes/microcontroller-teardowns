@@ -140,7 +140,8 @@ fig = px.scatter(
     category_orders={'Company': important_companies}
 )
 
-fig.update_traces(hovertemplate="%{customdata[0]}")
+# Add <extra></extra> to hide the company name since it's already in the label
+fig.update_traces(hovertemplate="%{customdata[0]}<extra></extra>")
 
 y_tick_values = list(microcontroller_mapping.values())
 y_tick_text = list(microcontroller_mapping.keys())
